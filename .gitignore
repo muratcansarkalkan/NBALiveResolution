@@ -1,0 +1,32 @@
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sdf
+*.opensdf
+
+# Visual Studio Code
+.vscode/
+
+# Visual Studio 2022
+.vs/
+/bin/
+/obj/
+Release/
+
+# Compiled binaries
+*.dll
+*.exe
+*.pdb
+*.lib
+*.class
+*.jar
+
+# Dependency folders
+packages/
+node_modules/
+
+# Logs and databases
+*.log
+*.sqlite

@@ -4,7 +4,7 @@ This plugin allows user to play with widescreen resolutions in NBA Live 2005-08 
 
 ## Installation
 
-- Download the fixed executable for the game you would prefer windowed mode from [here](https://forums.nba-live.com/downloads.php?cat=263).
+- Download the NO-CD fixed executable for the game you would prefer windowed mode. You need the NO-CD fixed executable as the plugin is designed for a certain version of an executable. NO-CD is also advised as original CD's of NBA Live 2005-08 series unfortunately do not run in Windows 10 and further.
 
 - Download [ASI Loader](https://forums.nba-live.com/downloads.php?view=detail&df_id=13583) and follow instructions in Installation section at its Readme file.
 

@@ -3,9 +3,11 @@
 
 using namespace plugin;
 
-// WIP
-const unsigned int RES_X = 1920;
-const unsigned int RES_Y = 1080;
+// Call GetPrivateProfileInt to retrieve the integer value
+const unsigned int RES_X = GetPrivateProfileIntW(L"MAIN", L"RES_X", 640, L".\\wndmode.ini");
+const unsigned int RES_Y = GetPrivateProfileIntW(L"MAIN", L"RES_Y", 480, L".\\wndmode.ini");
+// const unsigned int RES_X = 1366;
+// const unsigned int RES_Y = 768;
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
 
 namespace live2005 {
@@ -59,28 +61,6 @@ namespace live2005 {
         return a2;
     }
 
-    void __declspec(naked) OnSetArrangeScreen() {
-        __asm {
-            push RES_Y
-            push RES_X
-            mov  ecx, 0x741682
-            jmp  ecx
-        }
-    }
-
-    void __declspec(naked) OnSetArrangeWindow() {
-        __asm {
-            push RES_Y
-            push RES_X
-            mov  ecx, 0x4150F6
-            jmp  ecx
-        }
-    }
-    void OnSetWidescreen(int* t, const char setting) {
-        if (*(bool*)0x5562F6) // RMHUD::Screen::bWidescreen
-            Call<0x547830>(t, "1");
-    }
-
     int METHOD SetTestInConicalFrustum(float* _this, DUMMY_ARG, float* a2, float radius, bool cameraclip)
     {
         float v6; // [esp+0h] [ebp-1Ch]
@@ -125,38 +105,148 @@ namespace live2005 {
         }
         return 0;
     }
-    static void METHOD OnGetProjection(void* t, DUMMY_ARG, DWORD *a2, DWORD *a3, float *fovY, float *aspect, float *nearPlane, float *farPlane) {
-        CallMethod<0x6ECCD6>(t, a2, a3, fovY, aspect, nearPlane, farPlane);
+
+    // Changes resolution after exiting game but remains as sample ASM injection
+    void __declspec(naked) OnSetArrangeWindow3() {
+        __asm {
+            push RES_Y
+            push RES_X
+            mov  ecx, 0x5F85DF
+            jmp  ecx
+        }
     }
 
-    static void METHOD ResolutionSet(int xRight, int yBottom, char* a3, char* a4, int a5, char a6) {
-        CallMethod<0x5F2950>(1366, 768, a3, a4, a5, a6);
+    bool ResolutionSet(int xRight, int yBottom, char* a3, char* a4, int a5, char a6) {
+        return CallMethodAndReturn<bool, 0x5F2950>(RES_X, RES_Y, a3, a4, a5, a6);
     }
 
-    int METHOD TestInConicalFrustum(void *t, DUMMY_ARG, void *vector, float radius, bool cameraclip) {
-        return CallMethodAndReturn<int, 0x728050>(t, vector, radius, cameraclip);
+    DWORD METHOD FEAptInterface_Render(DWORD* t, DUMMY_ARG, char a1)
+    {
+        int v2; // [esp+Ch] [ebp-94h] BYREF
+        float v3[17]; // [esp+10h] [ebp-90h] BYREF
+        float v4; // [esp+54h] [ebp-4Ch]
+        char v5[64]; // [esp+60h] [ebp-40h] BYREF
+        float invX;
+        float invY;
+        float v6;
+        float v9;
+        float v10;
+
+        v2 = CallAndReturn<int, 0x7B0C70>(); // 480
+        v4 = CallAndReturn<int, 0x7B0CA0>(); // 640
+        invX = (double)v2 * 0.0015625f; // 640
+        invY = (double)v4 * 0.0020833334f; // 480
+        v10 = -0.5f;
+        if (v2 / v4 > 1.3333334)
+        {
+            v9 = invY;
+            invX = (double)v2 * 0.0011709601f;
+            v10 = 107.0 * invX - 0.5;
+        }
+        v3[0] = invX;
+        v3[5] = invY;
+        memset(&v3[1], 0, 16);
+        memset(&v3[6], 0, 16);
+        v3[10] = 1.0f;
+        v3[11] = 0.0f;
+        v3[12] = v10;
+        v3[13] = -0.5f;
+        v3[14] = -100.0f;
+        v3[15] = 1.0f;
+        //DWORD* address = (DWORD*)patch::GetPointer(0xC49D70);
+        void* camera = *raw_ptr<void*>(*(void**)0xC49D70, 28);
+        CallMethod<0x6E536A>(camera, &v2, v5);
+        CallMethod<0x6ECE34>(camera, &v2, v3);
+        if (a1)
+        {
+            CallMethod<0x6ECD87>(camera, (DWORD*)&v2, 0xFFFFFFFF, 5);
+        }
+        Call<0x7665D0>();
+        return CallMethodAndReturn<DWORD, 0x6ECE34>(camera, &v2, v5);
     }
 
-    static void METHOD EnableGeometry(void *t, DUMMY_ARG, int a2) {
-        CallMethod<0x732590>(t, a2);
+    int METHOD BroadcastMouseInput(int* _this)
+    {
+        int result; // eax
+        int* v3; // edi
+        int v4; // ebx
+        int v5; // ebx
+        int q6; // ebp
+        int v7; // [esp+14h] [ebp-18h]
+        int v8; // [esp+24h] [ebp-8h]
+        int v12;
+
+        int* pMouseDevice = *raw_ptr<int*>(_this, 0xC);
+        result = *pMouseDevice;
+
+        if (pMouseDevice)
+        {
+            v3 = CallAndReturn<int*, 0x6160E0>();
+            v4 = CallVirtualMethodAndReturn<int, 2>(pMouseDevice, 3); // pMouseDevice->PeekInput(3)
+            v12 = CallVirtualMethodAndReturn<int, 2>(pMouseDevice, 4);
+            int* pBroadcast = *raw_ptr<int*>(v3, 0x4);
+            int height = CallAndReturn<int, 0x7B0CA0>();
+            int width = CallAndReturn<int, 0x7B0C70>();
+            double fWidth = (double)width;
+            double fHeight = (double)height;
+            if ((fWidth / fHeight) > 1.3333334f)
+            {
+                v7 = (int)(fWidth * 0.0011709601f * 107.0f);
+                width -= 2 * v7;
+                v4 -= v7;
+            }
+            v5 = 640 * v4 / width;
+            v8 = 480 * v12 / height;
+            if (CallVirtualMethodAndReturn<int, 14>(pMouseDevice, 1))
+            {
+                CallVirtualMethod<1>(v3, 130, 0, v5, v8, 0);
+            }
+            else if (CallVirtualMethodAndReturn<int, 15>(pMouseDevice, 1))
+            {
+                CallMethod<0x611E00>(v3, 131, 0, v5, v8, 0);
+            }
+            if (CallVirtualMethodAndReturn<int, 14>(pMouseDevice, 0))
+            {
+                CallVirtualMethod<1>(v3, 132, 0, v5, v8, 0);
+            }
+            else if (CallVirtualMethodAndReturn<int, 15>(pMouseDevice, 0))
+            {
+                CallMethod<0x611E00>(v3, 133, 0, v5, v8, 0);
+            }
+            q6 = CallVirtualMethodAndReturn<int, 2>(pMouseDevice, 0) != 0;
+            if (CallVirtualMethodAndReturn<int, 2>(pMouseDevice, 2))
+                q6 |= 4u;
+            if (CallVirtualMethodAndReturn<int, 2>(pMouseDevice, 1))
+                q6 |= 2u;
+            return CallVirtualMethodAndReturn<int, 1>(v3, 128, 0, v5, v8, q6);
+        }
+        return result;
     }
 }
 
 void Install_LIVE2005() {
     using namespace live2005;
     patch::RedirectJump(0x6EC921, SetPerspectiveProjection05);
-    //patch::RedirectCall(0x728C4F, TestInConicalFrustum);
-    //patch::RedirectCall(0x727FAB, OnGetProjection);
     patch::RedirectJump(0x728050, SetTestInConicalFrustum);
-    //patch::RedirectCall(0x7BEF63, EnableGeometry);
-    //patch::RedirectCall(0x41E8AA, ResolutionSet);
-    //patch::RedirectCall(0x41F02E, ResolutionSet);
+    // Changes size of menu, intro.
+    patch::SetUInt(0x741678 + 1, RES_Y);
+    patch::SetUInt(0x74167D + 1, RES_X);
+    // Changes size of external window.
+    patch::SetUInt(0x4150EC + 1, RES_Y);
+    patch::SetUInt(0x4150F1 + 1, RES_X);
+    // Changes resolution after exiting game
+    patch::SetUInt(0x5F85D5 + 1, RES_Y);
+    patch::SetUInt(0x5F85DA + 1, RES_X);
+    patch::SetUInt(0x5F2BA6 + 1, RES_Y);
+    patch::SetUInt(0x5F2BAB + 1, RES_X);
     // modify resolution addresses
     for (const auto& resolution : ids) {
         patch::SetUInt(0xBDF758 + 20 * resolution.id + 4, resolution.width);
         patch::SetUInt(0xBDF758 + 20 * resolution.id + 8, resolution.height);
         patch::SetUInt(0xBDF758 + 20 * resolution.id + 12, resolution.depth);
-    }
-    //patch::RedirectJump(0x741678, OnSetArrangeScreen);
-    //patch::RedirectJump(0x4150EC, OnSetArrangeWindow);
+    };
+    patch::RedirectJump(0x4C5560, FEAptInterface_Render);
+    patch::RedirectJump(0x617660, BroadcastMouseInput);
+    // Loadbar
+    // Movies
 }

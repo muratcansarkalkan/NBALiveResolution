@@ -3,6 +3,10 @@
 
 using namespace plugin;
 
+const unsigned int RES_X = GetPrivateProfileIntW(L"MAIN", L"RES_X", 640, L".\\wndmode.ini");
+const unsigned int RES_Y = GetPrivateProfileIntW(L"MAIN", L"RES_Y", 480, L".\\wndmode.ini");
+const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
+
 namespace live06 {
 
     ResolutionID ids[] = {
@@ -28,7 +32,6 @@ namespace live06 {
         long double fovR; // st7
         double w; // st6
         double dist; // st7
-        int savedregs; // [esp+0h] [ebp+0h] BYREF
         float h; // [esp+Ch] [ebp+Ch]
 
         _this[15] = 0.0f;
@@ -94,6 +97,109 @@ namespace live06 {
         }
         return 0;
     }
+
+    DWORD METHOD FEAptInterface_Render(DWORD* t, DUMMY_ARG, char a1, int a2)
+    {
+        int v3;
+        float v4[17];
+        float v5;
+        char v6[64];
+        float invX;
+        float invY;
+        float v7;
+        float v9;
+        float v10;
+
+        v3 = CallAndReturn<int, 0x7D0D10>(); // 480
+        v5 = CallAndReturn<int, 0x7D0D40>(); // 640
+        invX = (double)v3 * 0.0015625f; // 640
+        invY = (double)v5 * 0.0020833334f; // 480
+        v10 = -0.5f;
+        if (v3 / v5 > 1.3333334f)
+        {
+            v9 = invY;
+            invX = (double)v3 * 0.0011709601f;
+            v10 = 107.0 * invX - 0.5;
+        }
+        v4[0] = invX;
+        v4[5] = invY;
+        memset(&v4[1], 0, 16);
+        memset(&v4[6], 0, 16);
+        v4[10] = 1.0f;
+        v4[11] = 0.0f;
+        v4[12] = v10;
+        v4[13] = -0.5f;
+        v4[14] = -100.0f;
+        v4[15] = 1.0f;
+        //DWORD* address = (DWORD*)patch::GetPointer(0xC49D70);
+        void* camera = *raw_ptr<void*>(*(void**)0xCB2A6C, 28);
+        CallMethod<0x6FBF14>(camera, &v3, v6);
+        CallMethod<0x702731>(camera, &v3, v4);
+        if (a1)
+        {
+            CallMethod<0x702684>(camera, &v3, 0xFFFFFFFF, 1);
+        }
+        Call<0x7ABA00>();
+        return CallMethodAndReturn<DWORD, 0x702731>(camera, &v3, v6);
+    }
+
+    int METHOD BroadcastMouseInput(int* _this)
+    {
+        int result; // eax
+        int* v3; // edi
+        int v4; // ebx
+        int v5; // ebx
+        int q6; // ebp
+        int v7; // [esp+14h] [ebp-18h]
+        int v8; // [esp+24h] [ebp-8h]
+        int v12;
+
+        int* pMouseDevice = *raw_ptr<int*>(_this, 0xC);
+        result = *pMouseDevice;
+
+        if (pMouseDevice)
+        {
+            v3 = CallAndReturn<int*, 0x624AC0>();
+            v4 = CallVirtualMethodAndReturn<int, 2>(pMouseDevice, 3); // pMouseDevice->PeekInput(3)
+            v12 = CallVirtualMethodAndReturn<int, 2>(pMouseDevice, 4);
+            int* pBroadcast = *raw_ptr<int*>(v3, 0x4);
+            int height = CallAndReturn<int, 0x7D0D40>();
+            int width = CallAndReturn<int, 0x7D0D10>();
+            double fWidth = (double)width;
+            double fHeight = (double)height;
+            if ((fWidth / fHeight) > 1.3333334f)
+            {
+                v7 = (int)(fWidth * 0.0011709601f * 107.0f);
+                width -= 2 * v7;
+                v4 -= v7;
+            }
+            v5 = 640 * v4 / width;
+            v8 = 480 * v12 / height;
+            if (CallVirtualMethodAndReturn<int, 14>(pMouseDevice, 1))
+            {
+                CallVirtualMethod<1>(v3, 130, 0, v5, v8, 0);
+            }
+            else if (CallVirtualMethodAndReturn<int, 15>(pMouseDevice, 1))
+            {
+                CallMethod<0x620D10>(v3, 131, 0, v5, v8, 0);
+            }
+            if (CallVirtualMethodAndReturn<int, 14>(pMouseDevice, 0))
+            {
+                CallVirtualMethod<1>(v3, 132, 0, v5, v8, 0);
+            }
+            else if (CallVirtualMethodAndReturn<int, 15>(pMouseDevice, 0))
+            {
+                CallMethod<0x620D10>(v3, 133, 0, v5, v8, 0);
+            }
+            q6 = CallVirtualMethodAndReturn<int, 2>(pMouseDevice, 0) != 0;
+            if (CallVirtualMethodAndReturn<int, 2>(pMouseDevice, 2))
+                q6 |= 4u;
+            if (CallVirtualMethodAndReturn<int, 2>(pMouseDevice, 1))
+                q6 |= 2u;
+            return CallVirtualMethodAndReturn<int, 1>(v3, 128, 0, v5, v8, q6);
+        }
+        return result;
+    }
 }
 
 void Install_LIVE06() {
@@ -105,4 +211,24 @@ void Install_LIVE06() {
         patch::SetUInt(0xC4CF38 + 20 * resolution.id + 8, resolution.height);
         patch::SetUInt(0xC4CF38 + 20 * resolution.id + 12, resolution.depth);
     }
+    patch::SetUInt(0x414C6C + 1, RES_Y);
+    patch::SetUInt(0x414C71 + 1, RES_X);
+    patch::SetUInt(0x41EAB0 + 1, RES_Y);
+    patch::SetUInt(0x41EAB5 + 1, RES_X);
+    patch::SetUInt(0x600216 + 1, RES_Y);
+    patch::SetUInt(0x60021B + 1, RES_X);
+    patch::SetUInt(0x606685 + 1, RES_Y);
+    patch::SetUInt(0x60668A + 1, RES_X);
+    patch::SetUInt(0x6F2EC5 + 1, RES_Y);
+    patch::SetUInt(0x6F2ECA + 1, RES_X);
+    patch::SetUInt(0x755E48 + 1, RES_Y);
+    patch::SetUInt(0x755E4D + 1, RES_X);
+    patch::SetUInt(0x7D1D6D + 1, RES_Y);
+    patch::SetUInt(0x7D1D72 + 1, RES_X);
+    patch::SetUInt(0x7D1DA2 + 1, RES_Y);
+    patch::SetUInt(0x7D1DA7 + 1, RES_X);
+    patch::SetUInt(0xC4CEDC, RES_X);
+    patch::SetUInt(0xC4CEE0, RES_Y);
+    patch::RedirectJump(0x4BC4F0, FEAptInterface_Render);
+    patch::RedirectJump(0x626600, BroadcastMouseInput);
 }

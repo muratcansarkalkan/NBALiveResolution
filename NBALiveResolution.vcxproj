@@ -69,6 +69,14 @@
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /y "$(TargetPath)" "D:\Games\NBA LIVE 06\plugins"
+xcopy /y "$(TargetDir)$(TargetName).pdb" "D:\Games\NBA LIVE 06\plugins" 
+copy /y "$(TargetPath)" "D:\Games\NBA LIVE 07\plugins"
+xcopy /y "$(TargetDir)$(TargetName).pdb" "D:\Games\NBA LIVE 07\plugins" 
+copy /y "$(TargetPath)" "D:\Games\NBA LIVE 08\plugins"
+xcopy /y "$(TargetDir)$(TargetName).pdb" "D:\Games\NBA LIVE 08\plugins" </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

@@ -3,8 +3,8 @@
 
 using namespace plugin;
 
-const unsigned int RES_X = GetPrivateProfileIntW(L"MAIN", L"RES_X", 640, L".\\wndmode.ini");
-const unsigned int RES_Y = GetPrivateProfileIntW(L"MAIN", L"RES_Y", 480, L".\\wndmode.ini");
+const unsigned int RES_X = GetPrivateProfileIntW(L"DISPLAY", L"RES_X", 640, L".\\main.ini");
+const unsigned int RES_Y = GetPrivateProfileIntW(L"DISPLAY", L"RES_Y", 480, L".\\main.ini");
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
 
 namespace live06 {

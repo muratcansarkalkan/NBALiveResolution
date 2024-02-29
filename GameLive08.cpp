@@ -3,19 +3,19 @@
 
 using namespace plugin;
 
-const unsigned int RES_X = 1366;
-const unsigned int RES_Y = 768;
+const unsigned int RES_X = GetPrivateProfileIntW(L"DISPLAY", L"RES_X", 640, L".\\main.ini");
+const unsigned int RES_Y = GetPrivateProfileIntW(L"DISPLAY", L"RES_Y", 480, L".\\main.ini");
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
 
 namespace live08 {
 
     ResolutionID ids[] = {
         { 640,  480, 32, 0 }, // 640x480x16
-        { 1366,  768, 32, 1 }, // 640x480x32
+        { RES_X,  RES_Y, 32, 1 }, // 640x480x32
         { 1024,  768, 32, 2 }, // 800x600x16
         { 1280,  720, 32, 3 }, // 800x600x32
         { 1280, 1024, 32, 4 },
-        { 800, 600, 32, 5 },
+        { 1366, 768, 32, 5 },
         { 1440,  900, 32, 6 },
         { 1600,  900, 32, 7 },
         { 1600, 1200, 32, 8 },
@@ -116,14 +116,19 @@ void Install_LIVE08() {
     // resolutions
     patch::RedirectJump(0x43B341, SetPerspectiveProjection08);
     patch::RedirectJump(0x69F780, SetTestInConicalFrustum);
-    patch::SetPointer(0x8C9A95 + 1, "PS2");
-    patch::SetPointer(0x567741 + 1, "gWidescreen");
-    patch::SetPointer(0x567753 + 1, "1");
-    patch::SetPointer(0x567908 + 1, "gWidescreenMode");
-    patch::SetFloat(0xC72250, 0.2f);
     for (const auto& resolution : ids) {
         patch::SetUInt(0xD21F60 + 20 * resolution.id + 4, resolution.width);
         patch::SetUInt(0xD21F60 + 20 * resolution.id + 8, resolution.height);
         patch::SetUInt(0xD21F60 + 20 * resolution.id + 12, resolution.depth);
     }
+    patch::SetUInt(0x4145DC + 1, RES_Y);
+    patch::SetUInt(0x4145E1 + 1, RES_X);
+    patch::SetUInt(0x41F4E3 + 1, RES_Y);
+    patch::SetUInt(0x41F4E8 + 1, RES_X);
+    patch::SetUInt(0x66AFF0 + 1, RES_Y);
+    patch::SetUInt(0x66AFF5 + 1, RES_X);
+    patch::SetUInt(0xA12A12 + 1, RES_Y);
+    patch::SetUInt(0xA12A17 + 1, RES_X);
+    patch::SetUInt(0xE1E48C + 1, RES_Y);
+    patch::SetUInt(0xE1E491 + 1, RES_X);
 }

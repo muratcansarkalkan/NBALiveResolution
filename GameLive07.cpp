@@ -3,8 +3,8 @@
 
 using namespace plugin;
 
-const unsigned int RES_X = GetPrivateProfileIntW(L"MAIN", L"RES_X", 640, L".\\wndmode.ini");
-const unsigned int RES_Y = GetPrivateProfileIntW(L"MAIN", L"RES_Y", 480, L".\\wndmode.ini");
+const unsigned int RES_X = GetPrivateProfileIntW(L"DISPLAY", L"RES_X", 640, L".\\main.ini");
+const unsigned int RES_Y = GetPrivateProfileIntW(L"DISPLAY", L"RES_Y", 480, L".\\main.ini");
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
 
 namespace live07 {
@@ -221,5 +221,14 @@ void Install_LIVE07() {
     }
     patch::RedirectJump(0x4EAFA0, FEAptInterface_Render);
     patch::RedirectJump(0x65D820, BroadcastMouseInput);
-    //
+    patch::SetUInt(0x414CFC + 1, RES_Y);
+    patch::SetUInt(0x414D01 + 1, RES_X);
+    patch::SetUInt(0x41E310 + 1, RES_Y);
+    patch::SetUInt(0x41E315 + 1, RES_X);
+    patch::SetUInt(0x42C47D + 1, RES_Y);
+    patch::SetUInt(0x42C482 + 1, RES_X);
+    patch::SetUInt(0x64AB40 + 1, RES_Y);
+    patch::SetUInt(0x64AB45 + 1, RES_X);
+    patch::SetUInt(0x9D91C2 + 1, RES_Y);
+    patch::SetUInt(0x9D91C7 + 1, RES_X);
 }

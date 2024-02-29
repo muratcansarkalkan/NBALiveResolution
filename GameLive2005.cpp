@@ -4,8 +4,8 @@
 using namespace plugin;
 
 // Call GetPrivateProfileInt to retrieve the integer value
-const unsigned int RES_X = GetPrivateProfileIntW(L"MAIN", L"RES_X", 640, L".\\wndmode.ini");
-const unsigned int RES_Y = GetPrivateProfileIntW(L"MAIN", L"RES_Y", 480, L".\\wndmode.ini");
+const unsigned int RES_X = GetPrivateProfileIntW(L"DISPLAY", L"RES_X", 640, L".\\main.ini");
+const unsigned int RES_Y = GetPrivateProfileIntW(L"DISPLAY", L"RES_Y", 480, L".\\main.ini");
 // const unsigned int RES_X = 1366;
 // const unsigned int RES_Y = 768;
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
@@ -118,6 +118,10 @@ namespace live2005 {
 
     bool ResolutionSet(int xRight, int yBottom, char* a3, char* a4, int a5, char a6) {
         return CallMethodAndReturn<bool, 0x5F2950>(RES_X, RES_Y, a3, a4, a5, a6);
+    }
+
+    static void METHOD SetViewPortMovie1(float* _t, DUMMY_ARG, DWORD* a2, int xOffset, int yOffset, int w, int h, int nearP, int farP) {
+        CallMethod<0x6ED274>(_t, a2, xOffset, yOffset, RES_X, RES_Y, nearP, farP);
     }
 
     DWORD METHOD FEAptInterface_Render(DWORD* t, DUMMY_ARG, char a1)

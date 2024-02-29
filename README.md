@@ -13,7 +13,11 @@ This plugin allows user to play with widescreen resolutions in NBA Live 2005-08 
 - Copy "d3d9.dll", "oledlg.dll" and "plugins" folders from the archive to your game's root folder.
 Otherwise, this plugin will not work.
 
-- Copy "plugins" folder to your game's root folder.
+- Copy "plugins" folder and "main.ini" file to your game's root folder.
+
+- New version of plugin introduces "main.ini" where both windowed mode and menu resolution can be operated from same file. If you installed Windowed Mode plugin before, please re-download latest version.
+
+- Open "main.ini" and you can set RES_X and RES_Y values (width and height) to an integer you want. For example, if you want to play the game in full-screen and 1920x1080 resolution, changed WINDOWED value from 1 to 0, change RES_X value from 1366 to 1920 and RES_Y value from 768 to 1080.
 
 ## Usage
 
@@ -22,7 +26,7 @@ Otherwise, this plugin will not work.
 | Resolution    | 2005         | 2006         | 2007         | 2008         |
 |---------------|--------------|--------------|--------------|--------------|
 | 640x480x16    | 640x480x32   | 640x480x32   | 640x480x32   | 640x480x32   |
-| 640x480x32    | 800x600x32   | 800x600x32   | 800x600x32   | 800x600x32   |
+| 640x480x32    | 800x600x32   | 800x600x32   | RES_XxRES_Yx32*   | RES_XxRES_Yx32*   |
 | 800x600x16    | 1024x768x32  | 1024x768x32  | 1024x768x32  | 1024x768x32  |
 | 800x600x32    | 1280x720x32  | 1280x720x32  | 1280x720x32  | 1280x720x32  |
 | 1024x768x16   | 1280x1024x32 | 1280x1024x32 | 1280x1024x32 | 1280x1024x32 |
@@ -38,6 +42,10 @@ Otherwise, this plugin will not work.
 | 1680x1050x16  | -            | -            | -            | 3840x1200x32 |
 | 1680x1050x32  | -            | -            | -            | 3840x1600x32 |
 
+- To change resolutions at start and menus, you can modify RES_X and RES_Y values.
+
+- For NBA Live 07 and 08, if there aren't any resolutions specified in wndmode.ini, default resolutions are 800x600x32.
+
 - To play with the resolution you prefer, you need to navigate to Options -> Detail Settings and select resolution from left. For example, if you prefer a resolution of 1920x1080x32 in NBA Live 06, select 1600x1200x16 as your resolution.
 
 - There is no extra hex edit needed, as aspect ratio is adjusted accordingly with width and height, rather than a fixed ratio.
@@ -45,6 +53,13 @@ Otherwise, this plugin will not work.
 ## Release Notes
 
 - v1.0: Initial release.
+
+- v1.1: Widescreen feature for UI and custom resolution.
+
+## FAQ
+
+- **Q**: For NBA Live 2005 and 06, movies are centered on the screen and surrounded by plain blue color. Will this be fixed?
+- **A**: Yes, I am working on this. It will be fixed by the next update.
 
 ## Building on Windows
 

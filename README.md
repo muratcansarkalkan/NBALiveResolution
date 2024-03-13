@@ -54,9 +54,9 @@ Otherwise, this plugin will not work.
 
 - v1.0: Initial release.
 
-- v1.1: Widescreen feature for UI and custom resolution.
+- v1.0.1: Widescreen feature for UI and custom resolution.
 
-- v1.1.1: Added widescreen adjusted UI components for NBA Live 2005 and NBA Live 06. This update will not change any of the original files and will be only used if you prefer a widescreen resolution.
+- v1.0.2: Added widescreen adjusted UI components for NBA Live 2005 and NBA Live 06. This update will not change any of the original files and will be only used if you prefer a widescreen resolution.
 
 ## FAQ
 

@@ -1,5 +1,6 @@
 #include "plugin-std.h"
 #include "Resolutions.h"
+#include "AdjustWSUI.h"
 
 using namespace plugin;
 
@@ -8,7 +9,8 @@ const unsigned int RES_Y = GetPrivateProfileIntW(L"DISPLAY", L"RES_Y", 480, L".\
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
 
 namespace live06 {
-
+    
+    // An array of resolutions
     ResolutionID ids[] = {
         { 640,  480, 32, 0 }, // 640x480x16
         { 800,  600, 32, 1 }, // 640x480x32
@@ -21,6 +23,8 @@ namespace live06 {
         { 1920, 1080, 32, 8 },
         { 2560, 1440, 32, 9 },
     };
+
+    // Function modified to set aspect ratio based on height and width
     DWORD* METHOD SetPerspectiveProjection06(
         float* _this, DUMMY_ARG,
         DWORD* a2,
@@ -56,6 +60,7 @@ namespace live06 {
         return a2;
     }
 
+    // Function that enables/disables object visibility depending on FOV
     int METHOD SetTestInConicalFrustum(float* _this, DUMMY_ARG, float* a2, float radius, bool cameraclip)
     {
         float v6;
@@ -98,6 +103,7 @@ namespace live06 {
         return 0;
     }
 
+    // Function that scales UI components properly for widescreen
     DWORD METHOD FEAptInterface_Render(DWORD* t, DUMMY_ARG, char a1, int a2)
     {
         int v3;
@@ -130,8 +136,7 @@ namespace live06 {
         v4[12] = v10;
         v4[13] = -0.5f;
         v4[14] = -100.0f;
-        v4[15] = 1.0f;
-        //DWORD* address = (DWORD*)patch::GetPointer(0xC49D70);
+        v4[15] = 1.0f; // scale, it is scaled by 1/v4[15]
         void* camera = *raw_ptr<void*>(*(void**)0xCB2A6C, 28);
         CallMethod<0x6FBF14>(camera, &v3, v6);
         CallMethod<0x702731>(camera, &v3, v4);
@@ -143,6 +148,7 @@ namespace live06 {
         return CallMethodAndReturn<DWORD, 0x702731>(camera, &v3, v6);
     }
 
+    // Function that scales mouse position properly for widescreen
     int METHOD BroadcastMouseInput(int* _this)
     {
         int result; // eax
@@ -206,6 +212,7 @@ void Install_LIVE06() {
     using namespace live06;
     patch::RedirectJump(0x70221E, SetPerspectiveProjection06);
     patch::RedirectJump(0x73E3C0, SetTestInConicalFrustum);
+    // Sets resolutions
     for (const auto& resolution : ids) {
         patch::SetUInt(0xC4CF38 + 20 * resolution.id + 4, resolution.width);
         patch::SetUInt(0xC4CF38 + 20 * resolution.id + 8, resolution.height);
@@ -231,4 +238,10 @@ void Install_LIVE06() {
     patch::SetUInt(0xC4CEE0, RES_Y);
     patch::RedirectJump(0x4BC4F0, FEAptInterface_Render);
     patch::RedirectJump(0x626600, BroadcastMouseInput);
+
+    std::string pathA = ".\\assets\\06WSUI"; // Replace with the actual path 'a'
+    std::string pathB = ".\\sgsm"; // Replace with the actual path 'b'
+
+    adjustWSUI::adjustWidescreenUI(ASPECT_RATIO, pathA, pathB);
+
 }

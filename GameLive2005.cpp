@@ -1,13 +1,12 @@
 #include "plugin-std.h"
 #include "Resolutions.h"
+#include "AdjustWSUI.h"
 
 using namespace plugin;
 
 // Call GetPrivateProfileInt to retrieve the integer value
 const unsigned int RES_X = GetPrivateProfileIntW(L"DISPLAY", L"RES_X", 640, L".\\main.ini");
 const unsigned int RES_Y = GetPrivateProfileIntW(L"DISPLAY", L"RES_Y", 480, L".\\main.ini");
-// const unsigned int RES_X = 1366;
-// const unsigned int RES_Y = 768;
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
 
 namespace live2005 {
@@ -114,10 +113,6 @@ namespace live2005 {
             mov  ecx, 0x5F85DF
             jmp  ecx
         }
-    }
-
-    bool ResolutionSet(int xRight, int yBottom, char* a3, char* a4, int a5, char a6) {
-        return CallMethodAndReturn<bool, 0x5F2950>(RES_X, RES_Y, a3, a4, a5, a6);
     }
 
     static void METHOD SetViewPortMovie1(float* _t, DUMMY_ARG, DWORD* a2, int xOffset, int yOffset, int w, int h, int nearP, int farP) {
@@ -251,6 +246,12 @@ void Install_LIVE2005() {
     };
     patch::RedirectJump(0x4C5560, FEAptInterface_Render);
     patch::RedirectJump(0x617660, BroadcastMouseInput);
+
+    std::string pathA = ".\\assets\\05WSUI"; // Replace with the actual path 'a'
+    std::string pathB = ".\\sgsm"; // Replace with the actual path 'b'
+
+    adjustWSUI::adjustWidescreenUI(ASPECT_RATIO, pathA, pathB);
+
     // Loadbar
     // Movies
 }

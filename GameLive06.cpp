@@ -6,6 +6,7 @@ using namespace plugin;
 
 const unsigned int RES_X = GetPrivateProfileIntW(L"DISPLAY", L"RES_X", 640, L".\\main.ini");
 const unsigned int RES_Y = GetPrivateProfileIntW(L"DISPLAY", L"RES_Y", 480, L".\\main.ini");
+const unsigned int INTRO = GetPrivateProfileIntW(L"BOOTUP", L"INTRO", 1, L".\\main.ini");
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
 
 namespace live06 {
@@ -206,10 +207,41 @@ namespace live06 {
         }
         return result;
     }
+    // Loadbar
+    float loadXPos = ((212.0f / 640.0f) * (RES_Y * 1.33333f)) + ((RES_X - (RES_Y * 1.33333f)) / 2);
+    float loadYPos = ((397.0f / 480.0f) * RES_Y);
+    float loadWidth = 256.0f * (RES_Y / 480.0f);
+    float loadHeight = 64.0f * (RES_Y / 480.0f);
+    // Movies
+    float CalculateAspectRatio() {
+
+        // Check if aspect ratio is lower than 4:3 (1.333333f)
+        if (ASPECT_RATIO < 1.333334f) {
+            // If aspect ratio is lower, multiply 1.0 with (x / 640)
+            return 1.0f * (RES_X / 640.0f);
+        }
+        // Check if aspect ratio is higher than 4:3 but lower than 16:9 (1.777777f)
+        else if (ASPECT_RATIO > 1.333334f && ASPECT_RATIO <= 1.777777f) {
+            // If aspect ratio is higher but lower, multiply 1.0 with (x / 640)
+            return 1.0f * (RES_Y / 1088.0f);
+        }
+        // Check if aspect ratio is higher than 16:9
+        else {
+            // If aspect ratio is higher, multiply 1.0 with (y / 480)
+            return 1.0f * (RES_X / 1920.0f);
+        }
+    }
+    // CreationZone
+    int czXPos = (int)(((362.0f / 640.0f) * (RES_Y * 1.33333f)) + ((RES_X - (RES_Y * 1.33333f)) / 2));
+    int czYPos = (int)(((74.0f / 480.0f) * RES_Y));
+    int czWidth = (int)((225.0f * (RES_Y / 480.0f)));
+    int czHeight = (int)((303.0f * (RES_Y / 480.0f)));
+
 }
 
 void Install_LIVE06() {
     using namespace live06;
+    // Change aspect ratio in-game
     patch::RedirectJump(0x70221E, SetPerspectiveProjection06);
     patch::RedirectJump(0x73E3C0, SetTestInConicalFrustum);
     // Sets resolutions
@@ -218,6 +250,7 @@ void Install_LIVE06() {
         patch::SetUInt(0xC4CF38 + 20 * resolution.id + 8, resolution.height);
         patch::SetUInt(0xC4CF38 + 20 * resolution.id + 12, resolution.depth);
     }
+    // Changes size of windows
     patch::SetUInt(0x414C6C + 1, RES_Y);
     patch::SetUInt(0x414C71 + 1, RES_X);
     patch::SetUInt(0x41EAB0 + 1, RES_Y);
@@ -236,12 +269,39 @@ void Install_LIVE06() {
     patch::SetUInt(0x7D1DA7 + 1, RES_X);
     patch::SetUInt(0xC4CEDC, RES_X);
     patch::SetUInt(0xC4CEE0, RES_Y);
+    // UI adjustment
     patch::RedirectJump(0x4BC4F0, FEAptInterface_Render);
     patch::RedirectJump(0x626600, BroadcastMouseInput);
+    // loadbar
+    patch::SetFloat(0xB83778 + 6, loadXPos);
+    patch::SetFloat(0xB837B8 + 6, loadYPos);
+    patch::SetFloat(0xB837F8 + 6, loadWidth);
+    patch::SetFloat(0xB83838 + 6, loadHeight);
+    // Movies
+    if (INTRO == 1) {
+        if (ASPECT_RATIO < 1.333334f) {
+            patch::SetPointer(0x560A23 + 1, "EABRAND");
+            patch::SetPointer(0x560C96 + 1, "INTRO");
+        }
+        else {
+            patch::SetPointer(0x560A23 + 1, "EABRANDWS");
+            patch::SetPointer(0x560C96 + 1, "INTROWS");
+        }
+    }
+    else {
+        patch::SetPointer(0x560A23 + 1, "DUMMY");
+        patch::SetPointer(0x560C96 + 1, "DUMMY");
+    }
+    patch::SetFloat(0x6364F4 + 1, CalculateAspectRatio());
+    // CreateZone
+    patch::SetUInt(0xB851C8 + 6, czXPos);
+    patch::SetUInt(0xB85208 + 6, czYPos);
+    patch::SetUInt(0xB85248 + 6, czWidth);
+    patch::SetUInt(0xB85288 + 6, czHeight);
 
+    // Switch UI files
     std::string pathA = ".\\assets\\06WSUI"; // Replace with the actual path 'a'
     std::string pathB = ".\\sgsm"; // Replace with the actual path 'b'
-
     adjustWSUI::adjustWidescreenUI(ASPECT_RATIO, pathA, pathB);
 
 }

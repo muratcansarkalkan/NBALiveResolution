@@ -5,6 +5,7 @@ using namespace plugin;
 
 const unsigned int RES_X = GetPrivateProfileIntW(L"DISPLAY", L"RES_X", 640, L".\\main.ini");
 const unsigned int RES_Y = GetPrivateProfileIntW(L"DISPLAY", L"RES_Y", 480, L".\\main.ini");
+const unsigned int INTRO = GetPrivateProfileIntW(L"BOOTUP", L"INTRO", 1, L".\\main.ini");
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
 
 namespace live07 {
@@ -208,6 +209,17 @@ namespace live07 {
         }
         return result;
     }
+    // loadbar
+    float loadXStart = ((66.0f / 640.0f) * (RES_Y * 1.33333f)) + ((RES_X - (RES_Y * 1.33333f)) / 2);
+    float loadYStart = ((340.0f / 480.0f) * RES_Y);
+    float loadXEnd = ((130.0f / 640.0f) * (RES_Y * 1.33333f)) + ((RES_X - (RES_Y * 1.33333f)) / 2);
+    float loadYEnd = ((404.0f / 480.0f) * RES_Y);
+    // CreationZone
+    int czXPos = (int)(((362.0f / 640.0f) * (RES_Y * 1.33333f)) + ((RES_X - (RES_Y * 1.33333f)) / 2));
+    int czYPos = (int)(((74.0f / 480.0f) * RES_Y));
+    int czWidth = (int)((225.0f * (RES_Y / 480.0f)));
+    int czHeight = (int)((303.0f * (RES_Y / 480.0f)));
+
 }
 
 void Install_LIVE07() {
@@ -231,4 +243,24 @@ void Install_LIVE07() {
     patch::SetUInt(0x64AB45 + 1, RES_X);
     patch::SetUInt(0x9D91C2 + 1, RES_Y);
     patch::SetUInt(0x9D91C7 + 1, RES_X);
+    // loadbar
+    patch::SetFloat(0x63F932 + 4, loadXStart);
+    patch::SetFloat(0x63F962 + 4, loadXStart);
+    patch::SetFloat(0x63F93A + 4, loadYStart);
+    patch::SetFloat(0x63F952 + 4, loadYStart);
+    patch::SetFloat(0x63F94A + 4, loadXEnd);
+    patch::SetFloat(0x63F97A + 4, loadXEnd);
+    patch::SetFloat(0x63F96A + 4, loadYEnd);
+    patch::SetFloat(0x63F982 + 4, loadYEnd);
+    // enable/disable intro
+    if (INTRO != 1) {
+        patch::SetPointer(0x560A23 + 1, "DUMMY");
+        patch::SetPointer(0x560C96 + 1, "DUMMY");
+    }
+    // CreateZone
+    patch::SetUInt(0xC65D68, czXPos);
+    patch::SetUInt(0xC65D6C, czYPos);
+    patch::SetUInt(0xC65D70, czWidth);
+    patch::SetUInt(0xC65D74, czHeight);
+
 }

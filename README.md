@@ -13,11 +13,15 @@ This plugin allows user to play with widescreen resolutions in NBA Live 2005-08 
 - Copy "d3d9.dll", "oledlg.dll" and "plugins" folders from the archive to your game's root folder.
 Otherwise, this plugin will not work.
 
-- Copy "plugins" folder and "main.ini" file to your game's root folder.
+- Copy "plugins", "assets" and "movies" folders and "main.ini" file to your game's root folder.
+
+- If you have NBALiveResolution_d.asi in "plugins" folder, remove the file, so that the new plugin can work properly.
 
 - New version of plugin introduces "main.ini" where both windowed mode and menu resolution can be operated from same file. If you installed Windowed Mode plugin before, please re-download latest version.
 
 - Open "main.ini" and you can set RES_X and RES_Y values (width and height) to an integer you want. For example, if you want to play the game in full-screen and 1920x1080 resolution, changed WINDOWED value from 1 to 0, change RES_X value from 1366 to 1920 and RES_Y value from 768 to 1080.
+
+- To enable videos, change INTRO value under BOOTUP to 1. To disable, change to 0.
 
 ## Usage
 
@@ -50,6 +54,10 @@ Otherwise, this plugin will not work.
 
 - There is no extra hex edit needed, as aspect ratio is adjusted accordingly with width and height, rather than a fixed ratio.
 
+- For NBA Live 2005 and 06, there are two sizes of intros that can be created so the plugin can properly resize the videos, until I update the function properly. If you want to create videos 4:3 aspect ratio, you need to create it with a size of 640x480. If you want to create with 16:9 instead, you need to create it with a size of 1920x1088.
+
+- For NBA Live 07 and 08, there are no restrictions of creating video files, as game fits the video to the screen by default.
+
 ## Release Notes
 
 - v1.0: Initial release.
@@ -58,10 +66,12 @@ Otherwise, this plugin will not work.
 
 - v1.02: Added widescreen adjusted UI components for NBA Live 2005 and NBA Live 06. This update will not change any of the original files and will be only used if you prefer a widescreen resolution.
 
+- v1.03: Fixed scale and position for loadbar, player model at edit zone and movies. Added widescreen videos for 05 and 06. Credits to iceman for his help. Added enabling/disabling video functionality.
+
 ## FAQ
 
-- **Q**: For NBA Live 2005 and 06, movies are centered on the screen and surrounded by plain blue color. Will this be fixed?
-- **A**: Yes, I am working on this. It will be fixed by the next update.
+- **Q**: When I select resolution at detail settings, I still see old values. When will you fix them?
+- **A**: Yes, I am working on this. It will be fixed in the coming updates.
 
 ## Building on Windows
 
@@ -82,3 +92,5 @@ Otherwise, this plugin will not work.
 - wiscard_rush (UI components)
 
 - JuicyShaqMeat (UI components)
+
+- iceman (Widescreen intro videos for 2005 and 06)

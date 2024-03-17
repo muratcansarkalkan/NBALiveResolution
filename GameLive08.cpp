@@ -5,6 +5,7 @@ using namespace plugin;
 
 const unsigned int RES_X = GetPrivateProfileIntW(L"DISPLAY", L"RES_X", 640, L".\\main.ini");
 const unsigned int RES_Y = GetPrivateProfileIntW(L"DISPLAY", L"RES_Y", 480, L".\\main.ini");
+const unsigned int INTRO = GetPrivateProfileIntW(L"BOOTUP", L"INTRO", 1, L".\\main.ini");
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
 
 namespace live08 {
@@ -108,6 +109,20 @@ namespace live08 {
         }
         return 0;
     }
+    // Loadbar
+    float loadYPos = ((400.0f / 480.0f) * RES_Y);
+    float loadXPos(float xPos) {
+        return ((xPos / 640.0f) * (RES_Y * 1.33333f)) + ((RES_X - (RES_Y * 1.33333f)) / 2);
+    }
+    // CreationZone
+    int czXPos = (int)(((362.0f / 640.0f) * (RES_Y * 1.33333f)) + ((RES_X - (RES_Y * 1.33333f)) / 2));
+    int czYPos = (int)(((84.0f / 480.0f) * RES_Y));
+    int czWidth = (int)((225.0f * (RES_Y / 480.0f)));
+    int czHeight = (int)((303.0f * (RES_Y / 480.0f)));
+
+    static void METHOD ProgressBarCreate(int* _t, DUMMY_ARG, DWORD* a2, int xLocation, int yLocation, int width, int height, int a7, int a8) {
+        CallMethod<0x43BC94>(_t, a2, czXPos, czYPos, czWidth, czHeight, a7, a8);
+    }
 
 }
 
@@ -131,4 +146,27 @@ void Install_LIVE08() {
     patch::SetUInt(0xA12A17 + 1, RES_X);
     patch::SetUInt(0xE1E48C + 1, RES_Y);
     patch::SetUInt(0xE1E491 + 1, RES_X);
+    // loadbar
+    patch::SetFloat(0x65F110 + 6, loadYPos);
+    patch::SetFloat(0x65F124 + 6, loadYPos);
+    patch::SetFloat(0x65F138 + 6, loadYPos);
+    patch::SetFloat(0x65F14C + 6, loadYPos);
+    patch::SetFloat(0x65F160 + 6, loadYPos);
+    patch::SetFloat(0x65F174 + 6, loadYPos);
+    patch::SetFloat(0x65F188 + 6, loadYPos);
+    patch::SetFloat(0x65F19C + 6, loadXPos(201.0f));
+    patch::SetFloat(0x65F1A6 + 6, loadXPos(233.0f));
+    patch::SetFloat(0x65F1B0 + 6, loadXPos(265.0f));
+    patch::SetFloat(0x65F1BA + 6, loadXPos(297.0f));
+    patch::SetFloat(0x65F1C4 + 6, loadXPos(329.0f));
+    patch::SetFloat(0x65F1CE + 6, loadXPos(361.0f));
+    patch::SetFloat(0x65F1D8 + 6, loadXPos(393.0f));
+    // enable/disable intro
+    if (INTRO != 1) {
+        patch::SetPointer(0x56D8F5 + 1, "DUMMY");
+        patch::SetPointer(0x56DAA3 + 1, "DUMMY");
+    }
+    // CreateZone
+    patch::RedirectCall(0x66C667, ProgressBarCreate);
+    patch::RedirectCall(0x66C6B7, ProgressBarCreate);
 }

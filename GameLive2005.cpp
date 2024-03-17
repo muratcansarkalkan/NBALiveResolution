@@ -7,6 +7,7 @@ using namespace plugin;
 // Call GetPrivateProfileInt to retrieve the integer value
 const unsigned int RES_X = GetPrivateProfileIntW(L"DISPLAY", L"RES_X", 640, L".\\main.ini");
 const unsigned int RES_Y = GetPrivateProfileIntW(L"DISPLAY", L"RES_Y", 480, L".\\main.ini");
+const unsigned int INTRO = GetPrivateProfileIntW(L"BOOTUP", L"INTRO", 1, L".\\main.ini");
 const float ASPECT_RATIO = static_cast<float>(RES_X) / static_cast<float>(RES_Y);
 
 namespace live2005 {
@@ -119,6 +120,7 @@ namespace live2005 {
         CallMethod<0x6ED274>(_t, a2, xOffset, yOffset, RES_X, RES_Y, nearP, farP);
     }
 
+
     DWORD METHOD FEAptInterface_Render(DWORD* t, DUMMY_ARG, char a1)
     {
         int v2; // [esp+Ch] [ebp-94h] BYREF
@@ -221,12 +223,51 @@ namespace live2005 {
         }
         return result;
     }
+
+    // Loadbar
+    float loadXPos = ((200.0f / 640.0f) * (RES_Y * 1.33333f)) + ((RES_X - (RES_Y * 1.33333f)) / 2);
+    float loadYPos = ((447.5f / 480.0f) * RES_Y);
+    int loadWidth = 256 * (RES_Y / 480.0f);
+    int loadHeight = 32 * (RES_Y / 480.0f);
+
+    static void METHOD ProgressBarCreate(float* _t, DUMMY_ARG, DWORD* a2, float xLocation, float yLocation, int width, int height, float a7, int a8) {
+        CallMethod<0x5E84C0>(_t, a2, loadXPos, loadYPos, loadWidth, loadHeight, a7, a8);
+    }
+    // Movies
+    float CalculateAspectRatio() {
+
+        // Check if aspect ratio is lower than 4:3 (1.333333f)
+        if (ASPECT_RATIO < 1.333334f) {
+            // If aspect ratio is lower, multiply 1.0 with (x / 640)
+            return 1.0f * (RES_X / 640.0f);
+        }
+        // Check if aspect ratio is higher than 4:3 but lower than 16:9 (1.777777f)
+        else if (ASPECT_RATIO > 1.333334f && ASPECT_RATIO <= 1.777777f) {
+            // If aspect ratio is higher but lower, multiply 1.0 with (x / 640)
+            return 1.0f * (RES_X / 1280.0f);
+        }
+        // Check if aspect ratio is higher than 16:9
+        else {
+            // If aspect ratio is higher, multiply 1.0 with (y / 480)
+            return 1.0f * (RES_Y / 720.0f);
+        }
+    }
+    // CreationZone
+    int czXPos = (int)(((362.0f / 640.0f) * (RES_Y * 1.33333f)) + ((RES_X - (RES_Y * 1.33333f)) / 2));
+    int czYPos = (int)(((74.0f / 480.0f) * RES_Y));
+    int czWidth = (int)((225.0f * (RES_Y / 480.0f)));
+    int czHeight = (int)((303.0f * (RES_Y / 480.0f)));
+
 }
 
 void Install_LIVE2005() {
     using namespace live2005;
+    // Change aspect ratio in-game
     patch::RedirectJump(0x6EC921, SetPerspectiveProjection05);
     patch::RedirectJump(0x728050, SetTestInConicalFrustum);
+    // Changes size of buffer.
+    patch::SetUInt(0x41E8A0 + 1, RES_Y);
+    patch::SetUInt(0x41E865 + 1, RES_X);
     // Changes size of menu, intro.
     patch::SetUInt(0x741678 + 1, RES_Y);
     patch::SetUInt(0x74167D + 1, RES_X);
@@ -244,14 +285,39 @@ void Install_LIVE2005() {
         patch::SetUInt(0xBDF758 + 20 * resolution.id + 8, resolution.height);
         patch::SetUInt(0xBDF758 + 20 * resolution.id + 12, resolution.depth);
     };
+    // UI adjustment
     patch::RedirectJump(0x4C5560, FEAptInterface_Render);
     patch::RedirectJump(0x617660, BroadcastMouseInput);
-
+    // Loadbar
+    patch::RedirectCall(0x5CC5FD, ProgressBarCreate);
+    patch::RedirectCall(0x5DB5C8, ProgressBarCreate);
+    patch::RedirectCall(0x608C1D, ProgressBarCreate);
+    patch::RedirectCall(0x60E82F, ProgressBarCreate);
+    // Movies
+    if (INTRO == 1) {
+        if (ASPECT_RATIO < 1.333334f) {
+            patch::SetPointer(0x560AA8 + 1, "EABRAND");
+            patch::SetPointer(0x560DBF + 1, "INTRO");
+        }
+        else {
+            patch::SetPointer(0x560AA8 + 1, "EABRANDWS");
+            patch::SetPointer(0x560DBF + 1, "INTROWS");
+        }
+    }
+    else {
+        patch::SetPointer(0x560AA8 + 1, "DUMMY");
+        patch::SetPointer(0x560DBF + 1, "DUMMY");
+    }
+    patch::SetFloat(0x627544 + 1, CalculateAspectRatio());
+    // CreateZone
+    patch::SetUInt(0xB216F8 + 6, czXPos);
+    patch::SetUInt(0xB21738 + 6, czYPos);
+    patch::SetUInt(0xB21778 + 6, czWidth);
+    patch::SetUInt(0xB217B8 + 6, czHeight);
+    // Switch UI files
     std::string pathA = ".\\assets\\05WSUI"; // Replace with the actual path 'a'
     std::string pathB = ".\\sgsm"; // Replace with the actual path 'b'
-
     adjustWSUI::adjustWidescreenUI(ASPECT_RATIO, pathA, pathB);
 
-    // Loadbar
     // Movies
 }

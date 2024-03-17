@@ -244,12 +244,12 @@ namespace live2005 {
         // Check if aspect ratio is higher than 4:3 but lower than 16:9 (1.777777f)
         else if (ASPECT_RATIO > 1.333334f && ASPECT_RATIO <= 1.777777f) {
             // If aspect ratio is higher but lower, multiply 1.0 with (x / 640)
-            return 1.0f * (RES_X / 1280.0f);
+            return 1.0f * (RES_Y / 1088.0f);
         }
         // Check if aspect ratio is higher than 16:9
         else {
             // If aspect ratio is higher, multiply 1.0 with (y / 480)
-            return 1.0f * (RES_Y / 720.0f);
+            return 1.0f * (RES_X / 1920.0f);
         }
     }
     // CreationZone
